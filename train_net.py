@@ -77,6 +77,8 @@ class Trainer(DefaultTrainer):
             output_folder = os.path.join(cfg.OUTPUT_DIR, "inference")
         evaluator_list = []
         evaluator_type = MetadataCatalog.get(dataset_name).evaluator_type
+        print(f"****************** {evaluator_type} ******************")
+        print()
         # semantic segmentation
         if evaluator_type in ["sem_seg", "ade20k_panoptic_seg"]:
             evaluator_list.append(
@@ -283,6 +285,7 @@ def setup(args):
     Create configs and perform basic setups.
     """
     cfg = get_cfg()
+    
     # for poly lr schedule
     add_deeplab_config(cfg)
     add_maskformer2_config(cfg)
@@ -290,6 +293,7 @@ def setup(args):
     cfg.merge_from_list(args.opts)
     cfg.freeze()
     default_setup(cfg, args)
+    
     # Setup logger for "mask_former" module
     setup_logger(output=cfg.OUTPUT_DIR, distributed_rank=comm.get_rank(), name="mask2former")
     return cfg
@@ -309,6 +313,13 @@ def main(args):
         if comm.is_main_process():
             verify_results(cfg, res)
         return res
+    
+    #cfg.DATASETS.TRAIN = ("my_train_panoptic_separated",)
+    #cfg.DATASETS.TEST = ("my_val_panoptic_separated",)
+    
+    print(cfg.DATASETS)
+    print(MetadataCatalog.get(cfg.DATASETS.TRAIN[0]))
+    # sys.exit()
 
     trainer = Trainer(cfg)
     trainer.resume_or_load(resume=args.resume)
@@ -316,6 +327,42 @@ def main(args):
 
 
 if __name__ == "__main__":
+    from mask2former.data.datasets.register_coco_panoptic_annos_semseg import register_coco_panoptic_annos_sem_seg
+    
+    prefix = "/mnt/vault/scratch/bigbrains/tim/petrobras/mask2former/detectron_datasets/coco"
+    
+    # Load the categories
+    import json
+    with open(f"{prefix}/annotations/panoptic_train2017.json", "r") as f:
+        categories = json.load(f)["categories"]
+        
+    category_classes = [c["name"] for c in categories]
+    
+    colours = [
+        [255, 0, 0], [0, 255, 0], [0, 0, 255], [255, 255, 0], [255, 0, 255],
+        [0, 255, 255], [125, 0, 0], [0, 125, 0], [0, 0, 125], [125, 125, 0],
+    ]
+    
+    register_coco_panoptic_annos_sem_seg(
+        name="my_train_panoptic",
+        metadata={"thing_classes": category_classes, "thing_colors": colours, "categories": categories},
+        image_root=f"{prefix}/train2017",
+        panoptic_root=f"{prefix}/panoptic_train2017",
+        panoptic_json=f"{prefix}/annotations/panoptic_train2017.json",
+        instances_json=f"{prefix}/annotations/instances_train2017.json",
+        sem_seg_root=f"{prefix}/panoptic_semseg_train2017",
+    )
+    
+    register_coco_panoptic_annos_sem_seg(
+        name="my_val_panoptic",
+        metadata={"thing_classes": category_classes, "thing_colors": colours, "categories": categories},
+        image_root=f"{prefix}/val2017",
+        panoptic_root=f"{prefix}/panoptic_val2017",
+        panoptic_json=f"{prefix}/annotations/panoptic_val2017.json",
+        instances_json=f"{prefix}/annotations/instances_val2017.json",
+        sem_seg_root=f"{prefix}/panoptic_semseg_val2017",
+    )
+    
     args = default_argument_parser().parse_args()
     print("Command Line Args:", args)
     launch(

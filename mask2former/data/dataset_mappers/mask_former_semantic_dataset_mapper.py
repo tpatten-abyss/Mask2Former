@@ -154,8 +154,8 @@ class MaskFormerSemanticDatasetMapper:
         if sem_seg_gt is not None:
             dataset_dict["sem_seg"] = sem_seg_gt.long()
 
-        if "annotations" in dataset_dict:
-            raise ValueError("Semantic segmentation dataset should not have 'annotations'.")
+        # if "annotations" in dataset_dict:
+        #     raise ValueError("Semantic segmentation dataset should not have 'annotations'.")
 
         # Prepare per-category binary masks
         if sem_seg_gt is not None:

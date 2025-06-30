@@ -97,6 +97,44 @@ def test_opencv_video_format(codec, file_ext):
 
 
 if __name__ == "__main__":
+    from mask2former.data.datasets.register_coco_panoptic_annos_semseg import register_coco_panoptic_annos_sem_seg
+    
+    prefix = "/mnt/vault/scratch/bigbrains/tim/petrobras/mask2former/detectron_datasets/coco"
+    
+    # Load the categories
+    import json
+    with open(f"{prefix}/annotations/panoptic_train2017.json", "r") as f:
+        categories = json.load(f)["categories"]
+        
+    category_classes = [c["name"] for c in categories]
+    
+    colours = [
+        [255, 0, 0], [0, 255, 0], [0, 0, 255], [255, 255, 0], [255, 0, 255],
+        [0, 255, 255], [125, 0, 0], [0, 125, 0], [0, 0, 125], [125, 125, 0],
+    ]
+    
+    register_coco_panoptic_annos_sem_seg(
+        name="my_train_panoptic",
+        metadata={"thing_classes": category_classes, "thing_colors": colours, "categories": categories},
+        image_root=f"{prefix}/train2017",
+        panoptic_root=f"{prefix}/panoptic_train2017",
+        panoptic_json=f"{prefix}/annotations/panoptic_train2017.json",
+        instances_json=f"{prefix}/annotations/instances_train2017.json",
+        sem_seg_root=f"{prefix}/panoptic_semseg_train2017",
+    )
+    
+    register_coco_panoptic_annos_sem_seg(
+        name="my_val_panoptic",
+        metadata={"thing_classes": category_classes, "thing_colors": colours, "categories": categories},
+        image_root=f"{prefix}/val2017",
+        panoptic_root=f"{prefix}/panoptic_val2017",
+        panoptic_json=f"{prefix}/annotations/panoptic_val2017.json",
+        instances_json=f"{prefix}/annotations/instances_val2017.json",
+        sem_seg_root=f"{prefix}/panoptic_semseg_val2017",
+    )
+    
+    
+    
     mp.set_start_method("spawn", force=True)
     args = get_parser().parse_args()
     setup_logger(name="fvcore")

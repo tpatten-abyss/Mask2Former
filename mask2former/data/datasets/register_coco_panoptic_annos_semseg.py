@@ -130,12 +130,27 @@ def register_coco_panoptic_annos_sem_seg(
     name, metadata, image_root, panoptic_root, panoptic_json, sem_seg_root, instances_json
 ):
     panoptic_name = name
-    delattr(MetadataCatalog.get(panoptic_name), "thing_classes")
-    delattr(MetadataCatalog.get(panoptic_name), "thing_colors")
+    # if "thing_classes" in MetadataCatalog.get(panoptic_name):
+    #     delattr(MetadataCatalog.get(panoptic_name), "thing_classes")
+    # if "thing_colors" in MetadataCatalog.get(panoptic_name):
+    #     delattr(MetadataCatalog.get(panoptic_name), "thing_colors")
+    
+    thing_dataset_id_to_contiguous_id = {}
+    stuff_dataset_id_to_contiguous_id = {}
+    for i, cat in enumerate(metadata["categories"]):
+        #if cat["isthing"]:
+        thing_dataset_id_to_contiguous_id[cat["id"]] = i
+        stuff_dataset_id_to_contiguous_id[cat["id"]] = i
+            
+    metadata["thing_dataset_id_to_contiguous_id"] = thing_dataset_id_to_contiguous_id
+    metadata["stuff_dataset_id_to_contiguous_id"] = stuff_dataset_id_to_contiguous_id
+    metadata["stuff_classes"] = metadata["thing_classes"]
+    
     MetadataCatalog.get(panoptic_name).set(
         thing_classes=metadata["thing_classes"],
         thing_colors=metadata["thing_colors"],
         # thing_dataset_id_to_contiguous_id=metadata["thing_dataset_id_to_contiguous_id"],
+        # thing_dataset_id_to_contiguous_id=thing_dataset_id_to_contiguous_id,
     )
 
     # the name is "coco_2017_train_panoptic_with_sem_seg" and "coco_2017_val_panoptic_with_sem_seg"
@@ -178,4 +193,4 @@ def register_all_coco_panoptic_annos_sem_seg(root):
 
 
 _root = os.getenv("DETECTRON2_DATASETS", "datasets")
-register_all_coco_panoptic_annos_sem_seg(_root)
+#register_all_coco_panoptic_annos_sem_seg(_root)
