@@ -329,7 +329,8 @@ def main(args):
 if __name__ == "__main__":
     from mask2former.data.datasets.register_coco_panoptic_annos_semseg import register_coco_panoptic_annos_sem_seg
     
-    prefix = "/mnt/vault/scratch/bigbrains/tim/petrobras/mask2former/detectron_datasets/coco"
+    # prefix = "/mnt/vault/scratch/bigbrains/tim/petrobras/mask2former/detectron_datasets/coco"
+    prefix = "/mnt/vault/scratch/bigbrains/tim/petrobras/mask2former/nasr_wht2/maskformer_dataset/coco"
     
     # Load the categories
     import json
@@ -338,10 +339,14 @@ if __name__ == "__main__":
         
     category_classes = [c["name"] for c in categories]
     
-    colours = [
-        [255, 0, 0], [0, 255, 0], [0, 0, 255], [255, 255, 0], [255, 0, 255],
-        [0, 255, 255], [125, 0, 0], [0, 125, 0], [0, 0, 125], [125, 125, 0],
-    ]
+    # colours = [
+    #     [255, 0, 0], [0, 255, 0], [0, 0, 255], [255, 255, 0], [255, 0, 255],
+    #     [0, 255, 255], [125, 0, 0], [0, 125, 0], [0, 0, 125], [125, 125, 0],
+    # ]
+    
+    # Generate len(category_classes) colours
+    random.seed(42)
+    colours = [[random.randint(0, 255) for _ in range(3)] for _ in range(len(category_classes))]
     
     register_coco_panoptic_annos_sem_seg(
         name="my_train_panoptic",

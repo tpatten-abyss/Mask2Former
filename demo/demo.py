@@ -99,7 +99,8 @@ def test_opencv_video_format(codec, file_ext):
 if __name__ == "__main__":
     from mask2former.data.datasets.register_coco_panoptic_annos_semseg import register_coco_panoptic_annos_sem_seg
     
-    prefix = "/mnt/vault/scratch/bigbrains/tim/petrobras/mask2former/detectron_datasets/coco"
+    #prefix = "/mnt/vault/scratch/bigbrains/tim/petrobras/mask2former/detectron_datasets/coco"
+    prefix = "/mnt/vault/scratch/bigbrains/tim/petrobras/mask2former/nasr_wht2/maskformer_dataset/coco"
     
     # Load the categories
     import json
@@ -108,10 +109,15 @@ if __name__ == "__main__":
         
     category_classes = [c["name"] for c in categories]
     
-    colours = [
-        [255, 0, 0], [0, 255, 0], [0, 0, 255], [255, 255, 0], [255, 0, 255],
-        [0, 255, 255], [125, 0, 0], [0, 125, 0], [0, 0, 125], [125, 125, 0],
-    ]
+    # colours = [
+    #     [255, 0, 0], [0, 255, 0], [0, 0, 255], [255, 255, 0], [255, 0, 255],
+    #     [0, 255, 255], [125, 0, 0], [0, 125, 0], [0, 0, 125], [125, 125, 0],
+    # ]
+    
+    # Generate len(category_classes) colours
+    import random
+    random.seed(42)
+    colours = [[random.randint(0, 255) for _ in range(3)] for _ in range(len(category_classes))]
     
     register_coco_panoptic_annos_sem_seg(
         name="my_train_panoptic",
@@ -154,6 +160,7 @@ if __name__ == "__main__":
             img = read_image(path, format="BGR")
             start_time = time.time()
             predictions, visualized_output = demo.run_on_image(img)
+            # print(predictions)
             logger.info(
                 "{}: {} in {:.2f}s".format(
                     path,
